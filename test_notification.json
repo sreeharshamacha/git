@@ -1,0 +1,11 @@
+{
+    "templateName": "Credit_Rating_Notification",
+    "applicationCode": "CCLM",
+    "emailTo": [
+        "test@example.com"
+    ],
+    "content": {
+        "name": "John Doe",
+        "amount": "5000"
+    }
+}

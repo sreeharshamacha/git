@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: Notification-Management-Service
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/management_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+logging:
+  level:
+    root: INFO
+    com.notification.management: DEBUG
+
+notification:
+  rabbitmq:
+    exchange: In-bound-Notification-Exchange
+    routing-key: In-Bound-Routing-Key
+    queue: In-Bound-Queue
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME:your-email@gmail.com}
+    password: ${SMTP_PASSWORD:your-password}
+    auth: true
+    starttls: true

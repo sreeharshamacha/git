@@ -1,0 +1,32 @@
+# Task: Design and Implement Notification-Management-Service
+
+- [x] Project Initialization
+    - [x] Create `Notification-Management-Service` folder
+    - [x] Create `pom.xml` with Spring Boot 4.0.1 (Brave/Zipkin)
+    - [x] Set up directory structure
+    - [x] Create `docker-compose.yml` for Grafana stack
+- [x] Configuration
+    - [x] Configure `application.yml` and `application-dev.yml`
+    - [x] Configure Log4j2 with SLF4j (Trace/Span Support)
+    - [x] Configure Spring Security (Basic Auth/RBAC)
+- [x] Core Logic & Utilities
+    - [x] Implement `GlobalExceptionHandler`
+    - [x] Implement `MessageConstants`
+    - [x] Implement Generic API Response wrapper
+- [x] MVC Implementation
+    - [x] Create `ManagementAudit` Entity and Repository
+    - [x] Create `ManagementService` and `ManagementController` (audits, test-action, health-check)
+- [x] Verification & Runtime
+    - [x] Verify project build
+    - [x] Pause observability in dev profile
+    - [x] Run the service in dev mode
+    - [x] Verify endpoints with curl
+- [x] Swagger API Integration
+    - [x] Update `pom.xml` with SpringDoc dependency
+    - [x] Configure Security for Swagger
+    - [x] Verify Swagger UI visibility
+- [x] Application Onboarding Module
+    - [x] Create `Application` Entity and Repository
+    - [x] Create `ApplicationOnBoardingService`
+    - [x] Create `ApplicationOnBoardingController` (add, list, get, editOnboarding, deleteOnboarding)
+    - [x] Verify onboarding APIs
