@@ -28,6 +28,7 @@ public class NotificationTemplateService {
 
         NotificationTemplate template = NotificationTemplate.builder()
                 .name(request.getTemplateName())
+                .templateCode(request.getTemplateCode())
                 .applicationCode(request.getApplicationCode())
                 .applicationId(request.getApplicationId())
                 .channel(channel)
@@ -71,6 +72,7 @@ public class NotificationTemplateService {
                 .orElseThrow(() -> new RuntimeException("Channel not found with id: " + request.getChannelId()));
 
         template.setName(request.getTemplateName());
+        template.setTemplateCode(request.getTemplateCode());
         template.setApplicationCode(request.getApplicationCode());
         template.setApplicationId(request.getApplicationId());
         template.setChannel(channel);
@@ -98,6 +100,7 @@ public class NotificationTemplateService {
         return NotificationTemplateResponse.builder()
                 .templateId(template.getId())
                 .templateName(template.getName())
+                .templateCode(template.getTemplateCode())
                 .applicationCode(template.getApplicationCode())
                 .applicationId(template.getApplicationId())
                 .channelId(template.getChannel() != null ? template.getChannel().getId() : null)

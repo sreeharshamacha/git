@@ -50,7 +50,7 @@ public class NotificationRouteBuilder extends RouteBuilder {
                                 + "&autoDeclare=true&exchangeType=direct")
                                 .routeId("notification-consumer")
                                 .unmarshal().json(JsonLibrary.Jackson, QueueMessage.class)
-                                .log("Received notification message for Template: ${body.templateName}")
+                                .log("Received notification message for Template Code: ${body.templateCode}")
                                 .bean(NotificationConsumerProcessor.class, "process");
 
                 // SMTP Route: Send email using Camel Mail

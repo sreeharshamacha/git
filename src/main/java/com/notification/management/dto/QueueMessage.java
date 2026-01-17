@@ -18,6 +18,7 @@ import java.util.UUID;
 public class QueueMessage {
     private UUID templateId;
     private String templateName;
+    private String templateCode;
     private String applicationCode;
     private UUID applicationId;
     private List<String> emailTo;

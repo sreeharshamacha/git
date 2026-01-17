@@ -16,6 +16,7 @@ public class NotificationTemplateResponse {
 
     private UUID templateId;
     private String templateName;
+    private String templateCode;
     private String applicationCode;
     private UUID applicationId;
     private Long channelId;

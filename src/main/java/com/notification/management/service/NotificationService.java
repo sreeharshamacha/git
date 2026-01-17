@@ -26,64 +26,66 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final ApplicationRepository applicationRepository;
-    private final NotificationTemplateRepository templateRepository;
-    private final ManagementService managementService;
-    private final ProducerTemplate producerTemplate;
+        private final ApplicationRepository applicationRepository;
+        private final NotificationTemplateRepository templateRepository;
+        private final ManagementService managementService;
+        private final ProducerTemplate producerTemplate;
 
-    /**
-     * Processes the notification request after validating application and template.
-     *
-     * @param request the notification process request
-     */
-    public void processNotification(NotificationProcessRequest request) {
-        log.info("Starting notification processing for Template: {} and Application: {}",
-                request.getTemplateName(), request.getApplicationCode());
+        /**
+         * Processes the notification request after validating application and template.
+         *
+         * @param request the notification process request
+         */
+        public void processNotification(NotificationProcessRequest request) {
+                log.info("Starting notification processing for Template Code: {} and Application: {}",
+                                request.getTemplateCode(), request.getApplicationCode());
 
-        // 4) Check if Application Code exists and get Application ID
-        Application application = applicationRepository.findByCode(request.getApplicationCode())
-                .orElseThrow(() -> {
-                    log.error("Application validation failed: {} does not exist", request.getApplicationCode());
-                    return new BusinessException(MessageConstants.APP_NOT_FOUND_CODE,
-                            MessageConstants.ERROR_MSG_APP_NOT_EXIST);
-                });
-        UUID applicationId = application.getId();
-        log.debug("Found Application ID: {} for Code: {}", applicationId, request.getApplicationCode());
+                // 4) Check if Application Code exists and get Application ID
+                Application application = applicationRepository.findByCode(request.getApplicationCode())
+                                .orElseThrow(() -> {
+                                        log.error("Application validation failed: {} does not exist",
+                                                        request.getApplicationCode());
+                                        return new BusinessException(MessageConstants.APP_NOT_FOUND_CODE,
+                                                        MessageConstants.ERROR_MSG_APP_NOT_EXIST);
+                                });
+                UUID applicationId = application.getId();
+                log.debug("Found Application ID: {} for Code: {}", applicationId, request.getApplicationCode());
 
-        // 5) Identify Template ID using Template Name and Application ID
-        NotificationTemplate template = templateRepository
-                .findByNameAndApplicationId(request.getTemplateName(), applicationId)
-                .orElseThrow(() -> {
-                    log.error("Template validation failed: {} does not exist for Application ID: {}",
-                            request.getTemplateName(), applicationId);
-                    return new BusinessException(MessageConstants.TEMPLATE_NOT_FOUND_CODE,
-                            MessageConstants.ERROR_MSG_TEMPLATE_NOT_EXIST);
-                });
-        UUID templateId = template.getId();
-        log.debug("Found Template ID: {} for Name: {}", templateId, request.getTemplateName());
+                // 5) Identify Template ID using Template Code and Application ID
+                NotificationTemplate template = templateRepository
+                                .findByApplicationIdAndTemplateCode(applicationId, request.getTemplateCode())
+                                .orElseThrow(() -> {
+                                        log.error("Template validation failed: {} does not exist for Application ID: {}",
+                                                        request.getTemplateCode(), applicationId);
+                                        return new BusinessException(MessageConstants.TEMPLATE_NOT_FOUND_CODE,
+                                                        MessageConstants.ERROR_MSG_TEMPLATE_NOT_EXIST);
+                                });
+                UUID templateId = template.getId();
+                log.debug("Found Template ID: {} for Code: {}", templateId, request.getTemplateCode());
 
-        // 1) Construct the object json (QueueMessage)
-        QueueMessage queueMessage = QueueMessage.builder()
-                .templateId(templateId)
-                .templateName(template.getName())
-                .applicationCode(application.getCode())
-                .applicationId(applicationId)
-                .emailTo(request.getEmailTo())
-                .emailCc(request.getEmailCc())
-                .context(request.getContent())
-                .build();
+                // 1) Construct the object json (QueueMessage)
+                QueueMessage queueMessage = QueueMessage.builder()
+                                .templateId(templateId)
+                                .templateName(template.getName())
+                                .templateCode(template.getTemplateCode())
+                                .applicationCode(application.getCode())
+                                .applicationId(applicationId)
+                                .emailTo(request.getEmailTo())
+                                .emailCc(request.getEmailCc())
+                                .context(request.getContent())
+                                .build();
 
-        // g) Audit the details with status as in progress
-        ManagementAudit audit = managementService.logAudit("PROCESS_NOTIFICATION", "SYSTEM", "IN_PROGRESS",
-                "Constructed message for template: " + template.getName());
+                // g) Audit the details with status as in progress
+                ManagementAudit audit = managementService.logAudit("PROCESS_NOTIFICATION", "SYSTEM", "IN_PROGRESS",
+                                "Constructed message for template code: " + template.getTemplateCode());
 
-        // 2) Create apache camel based rabbitMQ implementation and create a producer
-        log.info("Sending message to RabbitMQ via Camel for processing...");
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("auditId", audit.getId());
+                // 2) Create apache camel based rabbitMQ implementation and create a producer
+                log.info("Sending message to RabbitMQ via Camel for processing...");
+                Map<String, Object> headers = new HashMap<>();
+                headers.put("auditId", audit.getId());
 
-        producerTemplate.sendBodyAndHeaders("direct:sendToQueue", queueMessage, headers);
+                producerTemplate.sendBodyAndHeaders("direct:sendToQueue", queueMessage, headers);
 
-        log.info("Notification request submitted to queue for Template: {}", request.getTemplateName());
-    }
+                log.info("Notification request submitted to queue for Template Code: {}", request.getTemplateCode());
+        }
 }

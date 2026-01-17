@@ -19,8 +19,8 @@ import java.util.List;
 @Builder
 public class NotificationProcessRequest {
 
-    @NotBlank(message = "Template name is required")
-    private String templateName;
+    @NotBlank(message = "Template code is required")
+    private String templateCode;
 
     @NotBlank(message = "Application code is required")
     private String applicationCode;

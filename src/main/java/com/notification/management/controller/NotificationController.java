@@ -26,65 +26,65 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class NotificationController {
 
-    private final NotificationService notificationService;
-    private final Optional<Tracer> tracer;
+        private final NotificationService notificationService;
+        private final Optional<Tracer> tracer;
 
-    /**
-     * Receives Post request to process Notification.
-     * Performs manual validation of required fields.
-     *
-     * @param request the notification process request
-     * @return acknowledgment response
-     */
-    @PostMapping("/process")
-    public ResponseEntity<ApiResponse<String>> processNotification(
-            @Valid @RequestBody NotificationProcessRequest request) {
-        log.info("Received notification process request for template: {}",
-                request != null ? request.getTemplateName() : "null");
+        /**
+         * Receives Post request to process Notification.
+         * Performs manual validation of required fields.
+         *
+         * @param request the notification process request
+         * @return acknowledgment response
+         */
+        @PostMapping("/process")
+        public ResponseEntity<ApiResponse<String>> processNotification(
+                        @Valid @RequestBody NotificationProcessRequest request) {
+                log.info("Received notification process request for template code: {}",
+                                request != null ? request.getTemplateCode() : "null");
 
-        // 3) Validate request is not null and required fields exist
-        if (request == null) {
-            log.warn("Notification request body is null");
-            return buildErrorResponse(MessageConstants.INVALID_REQUEST_CODE,
-                    MessageConstants.ERROR_MSG_INVALID_REQUEST);
+                // 3) Validate request is not null and required fields exist
+                if (request == null) {
+                        log.warn("Notification request body is null");
+                        return buildErrorResponse(MessageConstants.INVALID_REQUEST_CODE,
+                                        MessageConstants.ERROR_MSG_INVALID_REQUEST);
+                }
+
+                if (request.getTemplateCode() == null || request.getTemplateCode().isBlank()) {
+                        log.warn("Validation failed: Template Code is missing or null");
+                        return buildErrorResponse(MessageConstants.TEMPLATE_CODE_MISSING_CODE,
+                                        MessageConstants.ERROR_MSG_TEMPLATE_CODE_MISSING);
+                }
+
+                if (request.getApplicationCode() == null || request.getApplicationCode().isBlank()) {
+                        log.warn("Validation failed: Application Code is missing or null");
+                        return buildErrorResponse(MessageConstants.DATA_MISSING_CODE,
+                                        MessageConstants.ERROR_MSG_APP_CODE_MISSING);
+                }
+
+                // 6) Process the message using service
+                notificationService.processNotification(request);
+
+                // 7) Send the acknowledge response to sender
+                log.info("Notification request acknowledged for template code: {}", request.getTemplateCode());
+                return ResponseEntity.ok(ApiResponse.<String>builder()
+                                .code(MessageConstants.SUCCESS_CODE)
+                                .message(MessageConstants.NOTIFICATION_ACK_MSG)
+                                .data("SUCCESS")
+                                .traceId(getTraceId())
+                                .build());
         }
 
-        if (request.getTemplateName() == null || request.getTemplateName().isBlank()) {
-            log.warn("Validation failed: Template Name is missing or null");
-            return buildErrorResponse(MessageConstants.DATA_MISSING_CODE,
-                    MessageConstants.ERROR_MSG_TEMPLATE_NAME_MISSING);
+        private ResponseEntity<ApiResponse<String>> buildErrorResponse(String code, String message) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(ApiResponse.<String>builder()
+                                                .code(code)
+                                                .message(message)
+                                                .traceId(getTraceId())
+                                                .build());
         }
 
-        if (request.getApplicationCode() == null || request.getApplicationCode().isBlank()) {
-            log.warn("Validation failed: Application Code is missing or null");
-            return buildErrorResponse(MessageConstants.DATA_MISSING_CODE,
-                    MessageConstants.ERROR_MSG_APP_CODE_MISSING);
+        private String getTraceId() {
+                return tracer.map(t -> t.currentSpan() != null ? t.currentSpan().context().traceId() : "N/A")
+                                .orElse("N/A");
         }
-
-        // 6) Process the message using service
-        notificationService.processNotification(request);
-
-        // 7) Send the acknowledge response to sender
-        log.info("Notification request acknowledged for template: {}", request.getTemplateName());
-        return ResponseEntity.ok(ApiResponse.<String>builder()
-                .code(MessageConstants.SUCCESS_CODE)
-                .message(MessageConstants.NOTIFICATION_ACK_MSG)
-                .data("SUCCESS")
-                .traceId(getTraceId())
-                .build());
-    }
-
-    private ResponseEntity<ApiResponse<String>> buildErrorResponse(String code, String message) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.<String>builder()
-                        .code(code)
-                        .message(message)
-                        .traceId(getTraceId())
-                        .build());
-    }
-
-    private String getTraceId() {
-        return tracer.map(t -> t.currentSpan() != null ? t.currentSpan().context().traceId() : "N/A")
-                .orElse("N/A");
-    }
 }

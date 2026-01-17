@@ -13,11 +13,12 @@ public class MessageConstants {
     public static final String DATA_MISSING_CODE = "MGMT-005";
     public static final String APP_NOT_FOUND_CODE = "MGMT-006";
     public static final String TEMPLATE_NOT_FOUND_CODE = "MGMT-007";
+    public static final String TEMPLATE_CODE_MISSING_CODE = "MGMT-008";
 
     public static final String ERROR_MSG_INVALID_REQUEST = "Invalid request payload";
-    public static final String ERROR_MSG_TEMPLATE_NAME_MISSING = "Template Name is missing";
+    public static final String ERROR_MSG_TEMPLATE_CODE_MISSING = "Template code is missing";
     public static final String ERROR_MSG_APP_CODE_MISSING = "Application Code is missing";
     public static final String ERROR_MSG_APP_NOT_EXIST = "Application does not exist";
-    public static final String ERROR_MSG_TEMPLATE_NOT_EXIST = "Template does not exist";
+    public static final String ERROR_MSG_TEMPLATE_NOT_EXIST = "Template code is invalid";
     public static final String NOTIFICATION_ACK_MSG = "Notification request received and being processed";
 }

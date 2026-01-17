@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "notification_templates")
+@Table(name = "notification_templates", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "application_code", "template_code" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,8 +28,11 @@ public class NotificationTemplate {
     @Column(name = "template_id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "template_name", length = 100, nullable = false, unique = true)
+    @Column(name = "template_name", length = 100, nullable = false)
     private String name;
+
+    @Column(name = "template_code", length = 50, nullable = false)
+    private String templateCode;
 
     @Column(name = "application_code", length = 50, nullable = false)
     private String applicationCode;

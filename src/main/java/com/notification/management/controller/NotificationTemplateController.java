@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,17 +28,38 @@ public class NotificationTemplateController {
 
     private final NotificationTemplateService templateService;
     private final Optional<Tracer> tracer;
+    private final SpringTemplateEngine templateEngine;
 
-    public NotificationTemplateController(NotificationTemplateService templateService, Optional<Tracer> tracer) {
+    public NotificationTemplateController(NotificationTemplateService templateService,
+            Optional<Tracer> tracer,
+            @org.springframework.beans.factory.annotation.Qualifier("stringTemplateEngine") SpringTemplateEngine templateEngine) {
         this.templateService = templateService;
         this.tracer = tracer;
+        this.templateEngine = templateEngine;
+    }
+
+    @PostMapping("/preview")
+    @Operation(summary = "Preview template content", description = "Renders thymeleaf content with mock data")
+    public ResponseEntity<String> previewContent(@RequestBody com.notification.management.dto.PreviewRequest request) {
+        log.info("Request to preview template content");
+        try {
+            Context ctx = new Context();
+            if (request.getData() != null) {
+                ctx.setVariables(request.getData());
+            }
+            String rendered = templateEngine.process(request.getContent(), ctx);
+            return ResponseEntity.ok(rendered);
+        } catch (Exception e) {
+            log.error("Error rendering template preview: ", e);
+            return ResponseEntity.internalServerError().body("Error rendering preview: " + e.getMessage());
+        }
     }
 
     @PostMapping("/create")
     @Operation(summary = "Create a new template", description = "Creates a new notification template")
     public ResponseEntity<ApiResponse<NotificationTemplateResponse>> createTemplate(
             @Valid @RequestBody NotificationTemplateRequest request) {
-        log.info("Request to create template: {}", request.getTemplateName());
+        log.info("Request to create template: {}", request.getTemplateCode());
         return ResponseEntity.ok(buildResponse(MessageConstants.SUCCESS_CODE, MessageConstants.SUCCESS_MSG,
                 templateService.createTemplate(request)));
     }

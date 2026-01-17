@@ -22,6 +22,10 @@ public class NotificationTemplateRequest {
     @Size(max = 100, message = "Template name must not exceed 100 characters")
     private String templateName;
 
+    @NotBlank(message = "Template code is required")
+    @Size(max = 50, message = "Template code must not exceed 50 characters")
+    private String templateCode;
+
     @NotBlank(message = "Application code is required")
     @Size(max = 50, message = "Application code must not exceed 50 characters")
     private String applicationCode;
