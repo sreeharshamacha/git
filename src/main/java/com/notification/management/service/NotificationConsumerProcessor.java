@@ -10,6 +10,9 @@ import org.apache.camel.ProducerTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +27,7 @@ public class NotificationConsumerProcessor {
     private final NotificationTemplateRepository templateRepository;
     private final ManagementService managementService;
     private final ProducerTemplate producerTemplate;
+    private final TemplateEngine templateEngine;
 
     /**
      * Processes the message from RabbitMQ.
@@ -53,12 +57,21 @@ public class NotificationConsumerProcessor {
                     .orElseThrow(() -> new RuntimeException(
                             "Template not found in consumer phase: " + message.getTemplateId()));
 
-            // b) Check channel type (Current requirement: EMAIL only)
-            // c) EMAIL channel implementation
-            if (template.getChannel() != null && "EMAIL".equalsIgnoreCase(template.getChannel().getType())) {
-                sendEmail(message, template);
+            // b) Check channel type
+            if (template.getChannel() != null) {
+                String channelType = template.getChannel().getType();
+                if (channelType != null) {
+                    switch (channelType.toUpperCase()) {
+                        case "EMAIL" -> sendEmail(message, template);
+                        case "SMS" -> log.info("SMS implementation is coming soon...");
+                        case "IN-APP" -> log.info("IN-APP implementation is coming soon...");
+                        default -> log.warn("Channel type {} is not implemented yet.", channelType);
+                    }
+                } else {
+                    log.warn("Channel type is null for template ID: {}", message.getTemplateId());
+                }
             } else {
-                log.warn("Non-EMAIL channel types are not implemented yet.");
+                log.warn("Channel not found for template ID: {}", message.getTemplateId());
             }
 
             // Start the audit entry was done in producer, now mark it as completed.
@@ -79,13 +92,13 @@ public class NotificationConsumerProcessor {
         String subject = template.getSubject();
         String body = new String(template.getContent()); // Assuming content is body text
 
-        // Replace placeholders in body using context map if available
+        // Replace placeholders in body using Thymeleaf if context is available
         if (message.getContext() instanceof Map) {
             @SuppressWarnings("unchecked")
-            Map<String, Object> context = (Map<String, Object>) message.getContext();
-            for (Map.Entry<String, Object> entry : context.entrySet()) {
-                body = body.replace("{{" + entry.getKey() + "}}", String.valueOf(entry.getValue()));
-            }
+            Map<String, Object> variables = (Map<String, Object>) message.getContext();
+            Context thymeleafContext = new Context();
+            thymeleafContext.setVariables(variables);
+            body = templateEngine.process(body, thymeleafContext);
         }
 
         log.info("Sending email to: {} with subject: {}", message.getEmailTo(), subject);
