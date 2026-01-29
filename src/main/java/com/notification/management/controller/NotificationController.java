@@ -2,13 +2,13 @@ package com.notification.management.controller;
 
 import com.notification.management.dto.ApiResponse;
 import com.notification.management.dto.NotificationProcessRequest;
+import com.notification.management.exception.BusinessException;
 import com.notification.management.service.NotificationService;
 import com.notification.management.util.MessageConstants;
 import io.micrometer.tracing.Tracer;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,19 +45,19 @@ public class NotificationController {
                 // 3) Validate request is not null and required fields exist
                 if (request == null) {
                         log.warn("Notification request body is null");
-                        return buildErrorResponse(MessageConstants.INVALID_REQUEST_CODE,
+                        throw new BusinessException(MessageConstants.INVALID_REQUEST_CODE,
                                         MessageConstants.ERROR_MSG_INVALID_REQUEST);
                 }
 
                 if (request.getTemplateCode() == null || request.getTemplateCode().isBlank()) {
                         log.warn("Validation failed: Template Code is missing or null");
-                        return buildErrorResponse(MessageConstants.TEMPLATE_CODE_MISSING_CODE,
+                        throw new BusinessException(MessageConstants.TEMPLATE_CODE_MISSING_CODE,
                                         MessageConstants.ERROR_MSG_TEMPLATE_CODE_MISSING);
                 }
 
                 if (request.getApplicationCode() == null || request.getApplicationCode().isBlank()) {
                         log.warn("Validation failed: Application Code is missing or null");
-                        return buildErrorResponse(MessageConstants.DATA_MISSING_CODE,
+                        throw new BusinessException(MessageConstants.DATA_MISSING_CODE,
                                         MessageConstants.ERROR_MSG_APP_CODE_MISSING);
                 }
 
@@ -66,21 +66,7 @@ public class NotificationController {
 
                 // 7) Send the acknowledge response to sender
                 log.info("Notification request acknowledged for template code: {}", request.getTemplateCode());
-                return ResponseEntity.ok(ApiResponse.<String>builder()
-                                .code(MessageConstants.SUCCESS_CODE)
-                                .message(MessageConstants.NOTIFICATION_ACK_MSG)
-                                .data("SUCCESS")
-                                .traceId(getTraceId())
-                                .build());
-        }
-
-        private ResponseEntity<ApiResponse<String>> buildErrorResponse(String code, String message) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                .body(ApiResponse.<String>builder()
-                                                .code(code)
-                                                .message(message)
-                                                .traceId(getTraceId())
-                                                .build());
+                return ResponseEntity.ok(ApiResponse.success("SUCCESS", getTraceId()));
         }
 
         private String getTraceId() {

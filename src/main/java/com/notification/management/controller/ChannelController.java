@@ -3,7 +3,6 @@ package com.notification.management.controller;
 import com.notification.management.dto.ApiResponse;
 import com.notification.management.dto.ChannelDTO;
 import com.notification.management.service.ChannelService;
-import com.notification.management.util.MessageConstants;
 import io.micrometer.tracing.Tracer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,24 +32,21 @@ public class ChannelController {
     @Operation(summary = "Add a new channel", description = "Creates a new notification channel")
     public ResponseEntity<ApiResponse<ChannelDTO>> addChannel(@Valid @RequestBody ChannelDTO request) {
         log.info("Request to add channel: {}", request.getChannelType());
-        return ResponseEntity.ok(buildResponse(MessageConstants.SUCCESS_CODE, MessageConstants.SUCCESS_MSG,
-                channelService.addChannel(request)));
+        return ResponseEntity.ok(ApiResponse.success(channelService.addChannel(request), getTraceId()));
     }
 
     @GetMapping("/list")
     @Operation(summary = "List all channels", description = "Retrieves a list of all active channels")
     public ResponseEntity<ApiResponse<List<ChannelDTO>>> listChannels() {
         log.info("Request to list all channels");
-        return ResponseEntity.ok(buildResponse(MessageConstants.SUCCESS_CODE, MessageConstants.SUCCESS_MSG,
-                channelService.listAllChannels()));
+        return ResponseEntity.ok(ApiResponse.success(channelService.listAllChannels(), getTraceId()));
     }
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Get channel by ID", description = "Retrieves details of a specific channel")
     public ResponseEntity<ApiResponse<ChannelDTO>> getChannel(@PathVariable Long id) {
         log.info("Request to get channel: {}", id);
-        return ResponseEntity.ok(buildResponse(MessageConstants.SUCCESS_CODE, MessageConstants.SUCCESS_MSG,
-                channelService.getChannel(id)));
+        return ResponseEntity.ok(ApiResponse.success(channelService.getChannel(id), getTraceId()));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -58,19 +54,11 @@ public class ChannelController {
     public ResponseEntity<ApiResponse<String>> deleteChannel(@PathVariable Long id) {
         log.info("Request to delete channel: {}", id);
         channelService.deleteChannel(id);
-        return ResponseEntity.ok(buildResponse(MessageConstants.SUCCESS_CODE, MessageConstants.SUCCESS_MSG,
-                "Channel deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success("Channel deleted successfully", getTraceId()));
     }
 
-    private <T> ApiResponse<T> buildResponse(String code, String message, T data) {
-        String traceId = tracer.map(t -> t.currentSpan() != null ? t.currentSpan().context().traceId() : "N/A")
+    private String getTraceId() {
+        return tracer.map(t -> t.currentSpan() != null ? t.currentSpan().context().traceId() : "N/A")
                 .orElse("N/A");
-
-        return ApiResponse.<T>builder()
-                .code(code)
-                .message(message)
-                .data(data)
-                .traceId(traceId)
-                .build();
     }
 }

@@ -14,6 +14,8 @@ public class MessageConstants {
     public static final String APP_NOT_FOUND_CODE = "MGMT-006";
     public static final String TEMPLATE_NOT_FOUND_CODE = "MGMT-007";
     public static final String TEMPLATE_CODE_MISSING_CODE = "MGMT-008";
+    public static final String APP_NOT_ACTIVE_CODE = "MGMT-009";
+    public static final String TEMPLATE_NOT_ACTIVE_CODE = "MGMT-010";
 
     public static final String ERROR_MSG_INVALID_REQUEST = "Invalid request payload";
     public static final String ERROR_MSG_TEMPLATE_CODE_MISSING = "Template code is missing";

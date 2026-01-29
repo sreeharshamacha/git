@@ -17,4 +17,21 @@ public class ApiResponse<T> {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
     private String traceId;
+
+    public static <T> ApiResponse<T> success(T data, String traceId) {
+        return ApiResponse.<T>builder()
+                .code(com.notification.management.util.MessageConstants.SUCCESS_CODE)
+                .message(com.notification.management.util.MessageConstants.SUCCESS_MSG)
+                .data(data)
+                .traceId(traceId)
+                .build();
+    }
+
+    public static <T> ApiResponse<T> error(String code, String message, String traceId) {
+        return ApiResponse.<T>builder()
+                .code(code)
+                .message(message)
+                .traceId(traceId)
+                .build();
+    }
 }
