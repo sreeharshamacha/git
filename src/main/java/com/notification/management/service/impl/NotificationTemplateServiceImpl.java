@@ -28,19 +28,11 @@ public class NotificationTemplateServiceImpl implements NotificationTemplateServ
         Channel channel = channelRepository.findById(request.getChannelId())
                 .orElseThrow(() -> new RuntimeException("Channel not found with id: " + request.getChannelId()));
 
-        NotificationTemplate template = NotificationTemplate.builder()
-                .name(request.getTemplateName())
-                .templateCode(request.getTemplateCode())
-                .applicationCode(request.getApplicationCode())
-                .applicationId(request.getApplicationId())
-                .channel(channel)
-                .subject(request.getSubject())
-                .content(request.getContent())
-                .logo(request.getLogo())
-                .banner(request.getBanner())
-                .status(request.getStatus())
-                .isDelete("N")
-                .build();
+        NotificationTemplate template = NotificationTemplate.builder().name(request.getTemplateName())
+                .templateCode(request.getTemplateCode()).applicationCode(request.getApplicationCode())
+                .applicationId(request.getApplicationId()).channel(channel).subject(request.getSubject())
+                .masterDataCategory(request.getMasterDataCategory()).content(request.getContent())
+                .logo(request.getLogo()).banner(request.getBanner()).status(request.getStatus()).isDelete("N").build();
 
         NotificationTemplate saved = templateRepository.save(template);
         return mapToResponse(saved);
@@ -49,9 +41,7 @@ public class NotificationTemplateServiceImpl implements NotificationTemplateServ
     @Override
     @Transactional(readOnly = true)
     public List<NotificationTemplateResponse> listAllTemplates() {
-        return templateRepository.findAll().stream()
-                .filter(t -> !"Y".equals(t.getIsDelete()))
-                .map(this::mapToResponse)
+        return templateRepository.findAll().stream().filter(t -> !"Y".equals(t.getIsDelete())).map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -82,6 +72,7 @@ public class NotificationTemplateServiceImpl implements NotificationTemplateServ
         template.setApplicationId(request.getApplicationId());
         template.setChannel(channel);
         template.setSubject(request.getSubject());
+        template.setMasterDataCategory(request.getMasterDataCategory());
         template.setContent(request.getContent());
         template.setLogo(request.getLogo());
         template.setBanner(request.getBanner());
@@ -103,24 +94,15 @@ public class NotificationTemplateServiceImpl implements NotificationTemplateServ
     }
 
     private NotificationTemplateResponse mapToResponse(NotificationTemplate template) {
-        return NotificationTemplateResponse.builder()
-                .templateId(template.getId())
-                .templateName(template.getName())
-                .templateCode(template.getTemplateCode())
-                .applicationCode(template.getApplicationCode())
+        return NotificationTemplateResponse.builder().templateId(template.getId()).templateName(template.getName())
+                .templateCode(template.getTemplateCode()).applicationCode(template.getApplicationCode())
                 .applicationId(template.getApplicationId())
                 .channelId(template.getChannel() != null ? template.getChannel().getId() : null)
                 .channelType(template.getChannel() != null ? template.getChannel().getType() : null)
-                .subject(template.getSubject())
-                .content(template.getContent())
-                .logo(template.getLogo())
-                .banner(template.getBanner())
-                .status(template.getStatus())
-                .isDelete(template.getIsDelete())
-                .createdBy(template.getCreatedBy())
-                .updatedBy(template.getUpdatedBy())
-                .createdDate(template.getCreatedDate())
-                .updatedDate(template.getUpdatedDate())
-                .build();
+                .subject(template.getSubject()).masterDataCategory(template.getMasterDataCategory())
+                .content(template.getContent()).logo(template.getLogo()).banner(template.getBanner())
+                .status(template.getStatus()).isDelete(template.getIsDelete()).createdBy(template.getCreatedBy())
+                .updatedBy(template.getUpdatedBy()).createdDate(template.getCreatedDate())
+                .updatedDate(template.getUpdatedDate()).build();
     }
 }

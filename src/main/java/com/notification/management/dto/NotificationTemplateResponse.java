@@ -22,6 +22,7 @@ public class NotificationTemplateResponse {
     private Long channelId;
     private String channelType; // Useful to include the type name
     private String subject;
+    private String masterDataCategory;
     private byte[] content;
     private String logo;
     private String banner;

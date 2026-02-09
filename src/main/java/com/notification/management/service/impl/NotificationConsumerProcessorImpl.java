@@ -45,9 +45,8 @@ public class NotificationConsumerProcessorImpl implements NotificationConsumerPr
         log.info("Processing notification for Template ID: {} with Audit ID: {}", message.getTemplateId(), auditId);
 
         try {
-            NotificationTemplate template = templateRepository.findById(message.getTemplateId())
-                    .orElseThrow(() -> new RuntimeException(
-                            "Template not found in consumer phase: " + message.getTemplateId()));
+            NotificationTemplate template = templateRepository.findById(message.getTemplateId()).orElseThrow(
+                    () -> new RuntimeException("Template not found in consumer phase: " + message.getTemplateId()));
 
             if (!"01".equals(template.getStatus())) {
                 log.warn("Template ID {} is not active (status: {}), skipping notification processing.",
@@ -63,10 +62,10 @@ public class NotificationConsumerProcessorImpl implements NotificationConsumerPr
                 String channelType = template.getChannel().getType();
                 if (channelType != null) {
                     switch (channelType.toUpperCase()) {
-                        case "EMAIL" -> sendEmail(message, template);
-                        case "SMS" -> log.info("SMS implementation is coming soon...");
-                        case "IN-APP" -> log.info("IN-APP implementation is coming soon...");
-                        default -> log.warn("Channel type {} is not implemented yet.", channelType);
+                    case "EMAIL" -> sendEmail(message, template);
+                    case "SMS" -> log.info("SMS implementation is coming soon...");
+                    case "IN-APP" -> log.info("IN-APP implementation is coming soon...");
+                    default -> log.warn("Channel type {} is not implemented yet.", channelType);
                     }
                 } else {
                     log.warn("Channel type is null for template ID: {}", message.getTemplateId());
@@ -90,14 +89,24 @@ public class NotificationConsumerProcessorImpl implements NotificationConsumerPr
 
     private void sendEmail(QueueMessage message, NotificationTemplate template) {
         String subject = template.getSubject();
-        String body = new String(template.getContent());
+        String body = "";
+
+        if (template.getContent() != null) {
+            body = new String(template.getContent());
+        }
 
         if (message.getContext() instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> variables = (Map<String, Object>) message.getContext();
+            log.info("Processing template for {} with variables: {}", message.getEmailTo(), variables);
+
             Context thymeleafContext = new Context();
             thymeleafContext.setVariables(variables);
-            body = templateEngine.process(body, thymeleafContext);
+            try {
+                body = templateEngine.process(body, thymeleafContext);
+            } catch (Exception e) {
+                log.error("Error processing Thymeleaf template: {}", e.getMessage(), e);
+            }
         }
 
         log.info("Sending email to: {} with subject: {}", message.getEmailTo(), subject);

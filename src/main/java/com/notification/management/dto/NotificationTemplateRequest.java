@@ -39,6 +39,9 @@ public class NotificationTemplateRequest {
     @Size(max = 150, message = "Subject must not exceed 150 characters")
     private String subject;
 
+    @Size(max = 50, message = "Master data category must not exceed 50 characters")
+    private String masterDataCategory;
+
     private byte[] content;
 
     private String logo;

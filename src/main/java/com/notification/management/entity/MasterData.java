@@ -12,52 +12,31 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "notification_templates", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "application_code", "template_code" }) })
+@Table(name = "master_data", uniqueConstraints = { @UniqueConstraint(columnNames = { "category", "master_key" }) })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class NotificationTemplate {
+public class MasterData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "template_id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "template_name", length = 100, nullable = false)
-    private String name;
+    @Column(name = "category", length = 50, nullable = false)
+    private String category; // e.g., 'units', 'currency'
 
-    @Column(name = "template_code", length = 50, nullable = false)
-    private String templateCode;
+    @Column(name = "master_key", length = 50, nullable = false)
+    private String masterKey; // e.g., 'CM', 'USD'
 
-    @Column(name = "application_code", length = 50, nullable = false)
-    private String applicationCode;
+    @Column(name = "master_value", length = 255, nullable = false)
+    private String masterValue; // e.g., 'Centimeter', 'US Dollar'
 
-    @Column(name = "application_id", nullable = false)
-    private UUID applicationId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id")
-    private Channel channel;
-
-    @Column(name = "subject", length = 150)
-    private String subject;
-
-    @Column(name = "master_data_category", length = 50)
-    private String masterDataCategory;
-
-    @Lob
-    @Column(name = "content")
-    private byte[] content;
-
-    @Column(name = "logo")
-    private String logo;
-
-    @Column(name = "banner")
-    private String banner;
+    @Column(name = "is_active")
+    private Boolean isActive;
 
     @Column(name = "status", length = 2)
     private String status;
@@ -86,6 +65,9 @@ public class NotificationTemplate {
     public void prePersist() {
         if (this.isDelete == null) {
             this.isDelete = "N";
+        }
+        if (this.isActive == null) {
+            this.isActive = true;
         }
         if (this.status == null) {
             this.status = "01";
